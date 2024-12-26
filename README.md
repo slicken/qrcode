@@ -1,4 +1,4 @@
-# QR Code and Barcode Generator
+# qrcode - read or write qr and bar codes
 
 This application allows you to generate and read QR codes and Code 128 barcodes from image files. It provides a command-line interface to encode text into barcodes and decode barcodes from images.
 
