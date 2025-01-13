@@ -6,24 +6,23 @@ This application allows you to generate and read QR codes and Code 128 barcodes 
 
 ```
 user@pc:~$ qrcode 
-Usage: ./qrcode [TYPE] [ACTION] <FILE>
+Usage: ./app [TYPE] [ACTION] <FILE> ...
 
 Action:
   -r, --read <file>             Read barcode or QR code from an image file
-  -w, --write <text> <file>     Write text as a barcode and save to file
+  -w, --write <text> <file>     Write "text" as QR code or barcode and save to file (.png)
 
 Type (optional):
   -qrcode                       Generate a QR Code (default)
-  -code128                      Generate a Code 128 barcode
+  -barcode                      Generate a Code 128 barcode
 
 Arguments:
-  <FILE>                        The input image file to read, or the output file to save the barcode
+  <FILE>                        Input file to read from, or output file write to
 
 Examples:
-  ./app -r input.png            Read barcode from the input image file
-  ./app -w "qr text" output.png Write a QR Code barcode to output.png
-  ./app -w "qr text" -code128 output.png Write a Code 128 barcode to output.png
-./app [TYPE] [ACTION] <FILE> ...
+  ./app -r input.png            Read code from the input file
+  ./app -w "text" output.png    Write a QR code to output.png
+  ./app -barcode -w "text"      Write a barcode (Code 128) to barcode.png
 ```
 
 ## Installation
@@ -38,9 +37,10 @@ Examples:
    cd qrcode
    ```
 
-3. Build the application:
+3. Build and run application:
    ```sh
-   go build -o app main.go
+   go install
+   qrcode
    ```
 
 ## Dependencies

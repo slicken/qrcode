@@ -14,12 +14,11 @@ import (
 )
 
 var (
-	readFlag      = flag.String("r", "", "Read barcode from a file (short flag)")
-	readLongFlag  = flag.String("read", "", "Read barcode from a file (long flag)")
-	writeFlag     = flag.String("w", "", "Text to encode as barcode (short flag)")
-	writeLongFlag = flag.String("write", "", "Text to encode as barcode (long flag)")
-	qrFlag        = flag.Bool("qrcode", false, "Generate a QR Code (default)")
-	code128Flag   = flag.Bool("code128", false, "Generate a Code 128 barcode")
+	readFlag      = flag.String("r", "", "Read code from a file (short flag)")
+	readLongFlag  = flag.String("read", "", "Read code from a file (long flag)")
+	writeFlag     = flag.String("w", "", "Text to encode as code (short flag)")
+	writeLongFlag = flag.String("write", "", "Text to encode as code (long flag)")
+	barFlag       = flag.Bool("barcode", false, "Generate a Code 128 barcode")
 )
 
 func main() {
@@ -29,7 +28,7 @@ func main() {
 
 	// Handle the case when only a file is provided (default to read action)
 	if len(flag.Args()) == 1 && *readFlag == "" && *readLongFlag == "" && *writeFlag == "" && *writeLongFlag == "" {
-		readBarcode(flag.Arg(0))
+		readCode(flag.Arg(0))
 		return
 	}
 
@@ -44,22 +43,23 @@ func main() {
 		writeText = *writeLongFlag
 	}
 
-	// If read action is provided, read the barcode from the file
+	// If read action is provided, read the code from the file
 	if readFile != "" {
-		readBarcode(readFile)
+		readCode(readFile)
 	} else if writeText != "" {
-		// If write action is provided, create barcode from text and save to file
+		// If write action is provided, create code from text and save to file
 		if len(flag.Args()) == 1 {
 			filename := flag.Arg(0)
-			barcodeType := detectBarcodeType()
-			writeBarcode(writeText, filename, barcodeType)
+			codeType := detectBarcodeType()
+			writeBarcode(writeText, filename, codeType)
 		} else {
-			printUsage()
-			os.Exit(1)
+			filename := detectBarcodeType() + ".png"
+			codeType := detectBarcodeType()
+			writeBarcode(writeText, filename, codeType)
 		}
 	} else if len(flag.Args()) == 1 {
 		// Default to read action if only a file is provided
-		readBarcode(flag.Arg(0))
+		readCode(flag.Arg(0))
 	} else {
 		printUsage()
 		os.Exit(1)
@@ -72,23 +72,23 @@ func printUsage() {
 
 Action:
   -r, --read <file>             Read barcode or QR code from an image file
-  -w, --write <text> <file>     Write text as a barcode and save to file
+  -w, --write <text> <file>     Write "text" as QR code or barcode and save to file (.png)
 
 Type (optional):
   -qrcode                       Generate a QR Code (default)
-  -code128                      Generate a Code 128 barcode
+  -barcode                      Generate a Code 128 barcode
 
 Arguments:
-  <FILE>                        The input image file to read, or the output file to save the barcode
+  <FILE>                        Input file to read from, or output file write to
 
 Examples:
-  ./app -r input.png            Read barcode from the input image file
-  ./app -w "qr text" output.png Write a QR Code barcode to output.png
-  ./app -w "qr text" -code128 output.png Write a Code 128 barcode to output.png`)
+  ./app -r input.png            Read code from the input file
+  ./app -w "text" output.png    Write a QR code to output.png
+  ./app -barcode -w "text"      Write a barcode (Code 128) to barcode.png`)
 }
 
-// Function to read barcode from an image
-func readBarcode(filename string) {
+// Function to read code from an image
+func readCode(filename string) {
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -114,29 +114,29 @@ func readBarcode(filename string) {
 		return
 	}
 
-	log.Println("Failed to decode barcode")
+	log.Printf("Failed to decode '%s'\n", filename)
 }
 
-// Function to detect the barcode type, defaulting to QR Code
+// Function to detect the code type, defaulting to QR Code
 func detectBarcodeType() string {
-	if *code128Flag {
-		return "code128"
+	if *barFlag {
+		return "barcode"
 	}
 	return "qrcode"
 }
 
-// Function to write barcode as an image file
-func writeBarcode(text, filename, barcodeType string) {
+// Function to write code as an image file
+func writeBarcode(text, filename, codeType string) {
 	var img image.Image
 	var err error
 
-	switch barcodeType {
+	switch codeType {
 	case "qrcode":
 		img, err = qrcode.NewQRCodeWriter().Encode(text, gozxing.BarcodeFormat_QR_CODE, 250, 250, nil)
-	case "code128":
+	case "barcode":
 		img, err = oned.NewCode128Writer().Encode(text, gozxing.BarcodeFormat_CODE_128, 250, 50, nil)
 	default:
-		log.Fatalf("Unsupported barcode type: %s", barcodeType)
+		log.Fatalf("Unsupported barcode type: %s", codeType)
 	}
 	if err != nil {
 		log.Fatal(err)
@@ -152,5 +152,5 @@ func writeBarcode(text, filename, barcodeType string) {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("%s barcode saved to %s\n", barcodeType, filename)
+	fmt.Printf("%s saved to '%s'\n", codeType, filename)
 }
