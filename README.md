@@ -6,7 +6,7 @@ This application allows you to generate and read QR codes and Code 128 barcodes 
 
 ```
 user@pc:~$ qrcode 
-Usage: ./app [TYPE] [ACTION] <FILE> ...
+Usage: ./app [TYPE] [ACTION] <FILE> ... 
 
 Action:
   -r, --read <file>             Read barcode or QR code from an image file
